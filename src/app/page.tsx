@@ -4,7 +4,7 @@
 
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMeasure } from "react-use";
 import { BITS_IN_PARTITION } from "../../convex/chests";
 import { FixedSizeGrid as Grid } from "react-window";
@@ -26,9 +26,28 @@ function Chest({
 }) {
   const index = rowIndex * data.columnCount + columnIndex;
   const goldChests = useQuery(api.chests.getGoldChests) ?? [];
-  const openChest = useMutation(api.chests.openChest);
+  const partitionIndex = Math.floor(index / BITS_IN_PARTITION);
+  const openChest = useMutation(api.chests.openChest).withOptimisticUpdate(
+    (localStore, arg) => {
+      const currentValue = localStore.getQuery(api.chests.getChestPartition, {
+        partition: partitionIndex,
+      });
+      if (currentValue) {
+        localStore.setQuery(
+          api.chests.getChestPartition,
+          {
+            partition: partitionIndex,
+          },
+          {
+            ...currentValue,
+            bitset: currentValue.bitset | (1 << index % BITS_IN_PARTITION),
+          }
+        );
+      }
+    }
+  );
   const chestPartition = useQuery(api.chests.getChestPartition, {
-    partition: Math.floor(index / BITS_IN_PARTITION),
+    partition: partitionIndex,
   });
   const bit = 1 << index % BITS_IN_PARTITION;
   const isOpen = chestPartition ? (chestPartition.bitset & bit) !== 0 : false;
@@ -69,7 +88,7 @@ export default function Home() {
   const openBoxSum = useQuery(api.sums.getOpenBoxSum) ?? 0;
   const [code, setCode] = useState(window.localStorage.getItem(`code`));
   const [ref, { width, height }] = useMeasure<HTMLDivElement>();
-  console.log(height);
+
   return (
     <main className="flex min-h-screen flex-col items-center h-full">
       <h1 className="text-4xl mb-4">One Million Treasure Chests</h1>

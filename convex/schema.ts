@@ -8,5 +8,6 @@ export default defineSchema({
   }).index("by_partition", ["partition"]),
   sums: defineTable({
     value: v.number(),
-  }),
+    index: v.number(),
+  }).index("by_index", ["index"]),
 });

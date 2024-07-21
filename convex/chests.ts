@@ -1,22 +1,28 @@
-import { mutation, query, QueryCtx } from "./_generated/server";
+import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 
-const GOLD_CHESTS = [
-  {
-    index: 0,
-    code: "abc",
-  },
-  {
-    index: 3,
-    code: "b",
-  },
-  {
-    index: 20,
-    code: "c",
-  },
-];
-
 export const BITS_IN_PARTITION = 32;
+export const SUM_PARTITIONS = 5;
+
+function getGoldChestsEnv() {
+  return process.env.GOLD_CHESTS!.split(";").map((s) => {
+    const [index, code] = s.split(",");
+    return {
+      index: parseInt(index),
+      code,
+    };
+  });
+}
+
+async function incrementCount(ctx: MutationCtx) {
+  const randomIndex = Math.floor(Math.random() * SUM_PARTITIONS);
+  const sumRecord = await ctx.db
+    .query("sums")
+    .withIndex("by_index", (q) => q.eq("index", randomIndex))
+    .first();
+  sumRecord!.value++;
+  await ctx.db.patch(sumRecord!._id, { value: sumRecord!.value });
+}
 
 export const openChest = mutation({
   args: {
@@ -42,11 +48,9 @@ export const openChest = mutation({
       });
     }
 
-    const sumRecord = await ctx.db.query("sums").first();
-    sumRecord!.value++;
-    await ctx.db.patch(sumRecord!._id, { value: sumRecord!.value });
+    await incrementCount(ctx);
 
-    const goldChest = GOLD_CHESTS.find((c) => c.index === args.index);
+    const goldChest = getGoldChestsEnv().find((c) => c.index === args.index);
     if (goldChest) {
       return goldChest.code;
     }
@@ -82,7 +86,7 @@ async function isChestOpen(ctx: QueryCtx, index: number) {
 export const getGoldChests = query({
   async handler(ctx) {
     const chests = await Promise.all(
-      GOLD_CHESTS.map(async (chest) => {
+      getGoldChestsEnv().map(async (chest) => {
         return {
           isOpen: await isChestOpen(ctx, chest.index),
           index: chest.index,
