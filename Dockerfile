@@ -4,8 +4,8 @@ FROM base AS builder
 
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
-RUN npm ci
+COPY package.json bun.lockb ./
+RUN bun i
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -38,4 +38,4 @@ EXPOSE 3000
 
 ENV PORT=3000
 
-CMD HOSTNAME="0.0.0.0" node server.js
+CMD HOSTNAME="0.0.0.0" bun server.js
