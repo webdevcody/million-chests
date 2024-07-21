@@ -13,6 +13,8 @@ const NUMBER_OF_CHESTS = 1_000_000;
 const ROW_HEIGHT = 100;
 const COLUMN_WIDTH = 100;
 
+const TOTAL_GOLD_CHESTS = 10;
+
 function Chest({
   rowIndex,
   columnIndex,
@@ -88,6 +90,7 @@ export default function Home() {
   const openBoxSum = useQuery(api.sums.getOpenBoxSum) ?? 0;
   const [code, setCode] = useState("");
   const [ref, { width, height }] = useMeasure<HTMLDivElement>();
+  const goldChests = useQuery(api.chests.getGoldChests) ?? [];
 
   useEffect(() => {
     setCode(window.localStorage.getItem(`code`) ?? "");
@@ -97,6 +100,10 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center h-full">
       <h1 className="text-4xl mb-4">One Million Treasure Chests</h1>
       <p className="text-2xl mb-4">{openBoxSum} of 1,000,000 chests opened</p>
+
+      <p className="text-2xl mb-4">
+        {goldChests.length} of {TOTAL_GOLD_CHESTS} gold chests found
+      </p>
       {code && (
         <p className="text-xl mb-4">
           You found a code! Use the code of{" "}
