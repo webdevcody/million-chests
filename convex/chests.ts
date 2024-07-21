@@ -42,6 +42,10 @@ export const openChest = mutation({
       });
     }
 
+    const sumRecord = await ctx.db.query("sums").first();
+    sumRecord!.value++;
+    await ctx.db.patch(sumRecord!._id, { value: sumRecord!.value });
+
     const goldChest = GOLD_CHESTS.find((c) => c.index === args.index);
     if (goldChest) {
       return goldChest.code;

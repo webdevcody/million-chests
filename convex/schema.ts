@@ -6,4 +6,7 @@ export default defineSchema({
     partition: v.number(),
     bitset: v.number(),
   }).index("by_partition", ["partition"]),
+  sums: defineTable({
+    value: v.number(),
+  }),
 });

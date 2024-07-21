@@ -9,10 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/react-window": "^1.8.8",
     "convex": "^1.13.2",
     "next": "14.2.5",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-use": "^17.5.1",
+    "react-window": "^1.8.10"
   },
   "devDependencies": {
     "@types/node": "^20",

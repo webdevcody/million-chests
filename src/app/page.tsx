@@ -4,18 +4,27 @@
 
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
+import { useMeasure } from "react-use";
 import { BITS_IN_PARTITION } from "../../convex/chests";
+import { FixedSizeGrid as Grid } from "react-window";
 
-const NUMBER_OF_CHESTS = 100;
+const NUMBER_OF_CHESTS = 1_000_000;
+const ROW_HEIGHT = 100;
+const COLUMN_WIDTH = 100;
 
 function Chest({
-  index,
-  onCodeFound,
+  rowIndex,
+  columnIndex,
+  style,
+  data,
 }: {
-  index: number;
-  onCodeFound: (code: string) => void;
+  rowIndex: number;
+  columnIndex: number;
+  style: React.CSSProperties;
+  data: { columnCount: number; onCodeFound(code: string): void };
 }) {
+  const index = rowIndex * data.columnCount + columnIndex;
   const goldChests = useQuery(api.chests.getGoldChests) ?? [];
   const openChest = useMutation(api.chests.openChest);
   const chestPartition = useQuery(api.chests.getChestPartition, {
@@ -24,39 +33,47 @@ function Chest({
   const bit = 1 << index % BITS_IN_PARTITION;
   const isOpen = chestPartition ? (chestPartition.bitset & bit) !== 0 : false;
 
+  if (index >= NUMBER_OF_CHESTS) {
+    return null;
+  }
+
   return (
-    <button
-      key={index}
-      disabled={isOpen}
-      className="btn w-24 h-24 flex items-center justify-center"
-      onClick={() => {
-        openChest({ index }).then((code) => {
-          if (code) {
-            onCodeFound(code);
-          }
-        });
-      }}
-    >
-      {isOpen ? (
-        goldChests.some((c) => c.index === index) ? (
-          <img src="/chest-gold.png" />
+    <div style={style}>
+      <button
+        key={index}
+        disabled={isOpen}
+        className="btn w-24 h-24 flex items-center justify-center"
+        onClick={() => {
+          openChest({ index }).then((code) => {
+            if (code) {
+              data.onCodeFound(code);
+            }
+          });
+        }}
+      >
+        {isOpen ? (
+          goldChests.some((c) => c.index === index) ? (
+            <img src="/chest-gold.png" />
+          ) : (
+            <img src="/chest-empty.png" />
+          )
         ) : (
-          <img src="/chest-empty.png" />
-        )
-      ) : (
-        <img src="/chest.png" />
-      )}
-    </button>
+          <img src="/chest.png" />
+        )}
+      </button>
+    </div>
   );
 }
 
 export default function Home() {
+  const openBoxSum = useQuery(api.sums.getOpenBoxSum) ?? 0;
   const [code, setCode] = useState(window.localStorage.getItem(`code`));
-
+  const [ref, { width, height }] = useMeasure<HTMLDivElement>();
+  console.log(height);
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-4">
+    <main className="flex min-h-screen flex-col items-center h-full">
       <h1 className="text-4xl mb-4">One Million Treasure Chests</h1>
-      <p className="text-2xl mb-4">{1} of 1,000,000 chests opened</p>
+      <p className="text-2xl mb-4">{openBoxSum} of 1,000,000 chests opened</p>
       {code && (
         <p className="text-xl mb-4">
           You found a code! Use the code of{" "}
@@ -67,20 +84,27 @@ export default function Home() {
           .
         </p>
       )}
-      <div className="flex flex-wrap gap-1">
-        {new Array(NUMBER_OF_CHESTS).fill(null).map((_, index) => (
-          <Chest
-            onCodeFound={(code) => {
+      <div ref={ref} className="w-full h-screen">
+        <Grid
+          columnCount={Math.floor(width / COLUMN_WIDTH)}
+          columnWidth={COLUMN_WIDTH}
+          height={height}
+          width={width}
+          rowCount={NUMBER_OF_CHESTS / Math.ceil(width / COLUMN_WIDTH)}
+          rowHeight={ROW_HEIGHT}
+          itemData={{
+            columnCount: Math.ceil(width / COLUMN_WIDTH),
+            onCodeFound(code: string) {
               window.localStorage.setItem(`code`, code);
               setCode(code);
               alert(
                 `You found a discount code for my starter kit walkthrough: ${code}!`
               );
-            }}
-            index={index}
-            key={index}
-          />
-        ))}
+            },
+          }}
+        >
+          {Chest}
+        </Grid>
       </div>
     </main>
   );
