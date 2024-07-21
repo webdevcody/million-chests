@@ -86,8 +86,12 @@ function Chest({
 
 export default function Home() {
   const openBoxSum = useQuery(api.sums.getOpenBoxSum) ?? 0;
-  const [code, setCode] = useState(window.localStorage.getItem(`code`));
+  const [code, setCode] = useState("");
   const [ref, { width, height }] = useMeasure<HTMLDivElement>();
+
+  useEffect(() => {
+    setCode(window.localStorage.getItem(`code`) ?? "");
+  }, []);
 
   return (
     <main className="flex min-h-screen flex-col items-center h-full">
