@@ -60,7 +60,7 @@ function Chest({
     <div style={style}>
       <button
         key={index}
-        disabled={isOpen}
+        disabled={true || isOpen} // Disable until launch
         className="btn w-24 h-24 flex items-center justify-center"
         onClick={() => {
           openChest({ index }).then((code) => {
