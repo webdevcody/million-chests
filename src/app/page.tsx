@@ -107,7 +107,11 @@ export default function Home() {
         <p className="text-xl mb-4">
           You found a code! Use the code of{" "}
           <span className="text-blue-400">{code}</span> to get a free copy of my{" "}
-          <a className="link" href="https://google.com" target="_blank">
+          <a
+            className="link"
+            href="https://webdevcody.gumroad.com/l/wdc-saas-starter-kit-walkthrough"
+            target="_blank"
+          >
             starter kit
           </a>
           .
