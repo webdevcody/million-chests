@@ -97,7 +97,9 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center h-full">
-      <h1 className="text-4xl mb-4">One Million Treasure Chests</h1>
+      <h1 className="text-4xl mb-4">
+        One Million Treasure Chests (disabled until launch)
+      </h1>
       <p className="text-2xl mb-4">{openBoxSum} of 1,000,000 chests opened</p>
 
       <p className="text-2xl mb-4">

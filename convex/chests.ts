@@ -1,5 +1,5 @@
 import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 
 export const BITS_IN_PARTITION = 32;
 export const SUM_PARTITIONS = 5;
@@ -40,31 +40,33 @@ export const openChest = mutation({
     index: v.number(),
   },
   async handler(ctx, args) {
-    const partition = Math.floor(args.index / BITS_IN_PARTITION);
+    throw new ConvexError("Chests are disabled for now");
 
-    const chestPartition = await ctx.db
-      .query("chests")
-      .withIndex("by_partition", (q) => q.eq("partition", partition))
-      .first();
+    // const partition = Math.floor(args.index / BITS_IN_PARTITION);
 
-    if (!chestPartition) {
-      await ctx.db.insert("chests", {
-        partition,
-        bitset: 1 << args.index % BITS_IN_PARTITION,
-      });
-    } else {
-      chestPartition.bitset |= 1 << args.index % BITS_IN_PARTITION;
-      await ctx.db.patch(chestPartition._id, {
-        bitset: chestPartition.bitset,
-      });
-    }
+    // const chestPartition = await ctx.db
+    //   .query("chests")
+    //   .withIndex("by_partition", (q) => q.eq("partition", partition))
+    //   .first();
 
-    await incrementCount(ctx);
+    // if (!chestPartition) {
+    //   await ctx.db.insert("chests", {
+    //     partition,
+    //     bitset: 1 << args.index % BITS_IN_PARTITION,
+    //   });
+    // } else {
+    //   chestPartition.bitset |= 1 << args.index % BITS_IN_PARTITION;
+    //   await ctx.db.patch(chestPartition._id, {
+    //     bitset: chestPartition.bitset,
+    //   });
+    // }
 
-    const goldChest = getGoldChestsEnv().find((c) => c.index === args.index);
-    if (goldChest) {
-      return goldChest.code;
-    }
+    // await incrementCount(ctx);
+
+    // const goldChest = getGoldChestsEnv().find((c) => c.index === args.index);
+    // if (goldChest) {
+    //   return goldChest.code;
+    // }
   },
 });
 
