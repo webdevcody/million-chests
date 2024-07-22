@@ -6,9 +6,9 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useEffect, useState } from "react";
 import { useMeasure } from "react-use";
-import { BITS_IN_PARTITION } from "../../convex/chests";
 import { FixedSizeGrid as Grid } from "react-window";
 import Link from "next/link";
+import { BITS_IN_PARTITION } from "../../convex/config";
 
 const NUMBER_OF_CHESTS = 1_000_000;
 const ROW_HEIGHT = 70;
@@ -65,7 +65,7 @@ function Chest({
       <button
         key={index}
         disabled={!featureFlags.isEnabled || isOpen}
-        className="btn flex items-center justify-center"
+        className="size-16 btn btn-secondary flex items-center justify-center"
         onClick={() => {
           openChest({ index }).then((code) => {
             if (code) {
@@ -102,7 +102,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center h-full relative">
-      <div className="absolute right-2 top-2">
+      <div className="absolute right-4 top-4">
         <Link
           href="https://github.com/webdevcody/million-chests"
           target="_blank"

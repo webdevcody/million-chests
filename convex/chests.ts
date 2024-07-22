@@ -1,9 +1,6 @@
 import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
-import { getIsEnabled } from "./config";
-
-export const BITS_IN_PARTITION = 32;
-export const SUM_PARTITIONS = 5;
+import { BITS_IN_PARTITION, getIsEnabled, getSumPartitions } from "./config";
 
 export const getTotalGoldChests = query({
   async handler() {
@@ -22,7 +19,7 @@ function getGoldChestsEnv() {
 }
 
 async function incrementCount(ctx: MutationCtx) {
-  const randomIndex = Math.floor(Math.random() * SUM_PARTITIONS);
+  const randomIndex = Math.floor(Math.random() * getSumPartitions());
   const sumRecord = await ctx.db
     .query("sums")
     .withIndex("by_index", (q) => q.eq("index", randomIndex))
