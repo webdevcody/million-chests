@@ -13,8 +13,6 @@ const NUMBER_OF_CHESTS = 1_000_000;
 const ROW_HEIGHT = 100;
 const COLUMN_WIDTH = 100;
 
-const TOTAL_GOLD_CHESTS = 10;
-
 function Chest({
   rowIndex,
   columnIndex,
@@ -88,6 +86,7 @@ function Chest({
 
 export default function Home() {
   const openBoxSum = useQuery(api.sums.getOpenBoxSum) ?? 0;
+  const totalGoldChests = useQuery(api.chests.getTotalGoldChests) ?? 0;
   const [code, setCode] = useState("");
   const [ref, { width, height }] = useMeasure<HTMLDivElement>();
   const goldChests = useQuery(api.chests.getGoldChests) ?? [];
@@ -102,7 +101,7 @@ export default function Home() {
       <p className="text-2xl mb-4">{openBoxSum} of 1,000,000 chests opened</p>
 
       <p className="text-2xl mb-4">
-        {goldChests.length} of {TOTAL_GOLD_CHESTS} gold chests found
+        {goldChests.length} of {totalGoldChests} gold chests found
       </p>
       {code && (
         <p className="text-xl mb-4">

@@ -4,6 +4,12 @@ import { v } from "convex/values";
 export const BITS_IN_PARTITION = 32;
 export const SUM_PARTITIONS = 5;
 
+export const getTotalGoldChests = query({
+  async handler() {
+    return process.env.GOLD_CHESTS!.split(";").length;
+  },
+});
+
 function getGoldChestsEnv() {
   return process.env.GOLD_CHESTS!.split(";").map((s) => {
     const [index, code] = s.split(",");
@@ -20,8 +26,13 @@ async function incrementCount(ctx: MutationCtx) {
     .query("sums")
     .withIndex("by_index", (q) => q.eq("index", randomIndex))
     .first();
-  sumRecord!.value++;
-  await ctx.db.patch(sumRecord!._id, { value: sumRecord!.value });
+
+  if (!sumRecord) {
+    await ctx.db.insert("sums", { index: randomIndex, value: 1 });
+  } else {
+    sumRecord.value++;
+    await ctx.db.patch(sumRecord._id, { value: sumRecord.value });
+  }
 }
 
 export const openChest = mutation({
