@@ -15,6 +15,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as chests from "../chests.js";
+import type * as config from "../config.js";
 import type * as sums from "../sums.js";
 
 /**
@@ -27,6 +28,7 @@ import type * as sums from "../sums.js";
  */
 declare const fullApi: ApiFromModules<{
   chests: typeof chests;
+  config: typeof config;
   sums: typeof sums;
 }>;
 export declare const api: FilterApi<

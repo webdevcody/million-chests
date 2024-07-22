@@ -1,5 +1,6 @@
 import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
+import { getIsEnabled } from "./config";
 
 export const BITS_IN_PARTITION = 32;
 export const SUM_PARTITIONS = 5;
@@ -40,33 +41,43 @@ export const openChest = mutation({
     index: v.number(),
   },
   async handler(ctx, args) {
-    throw new ConvexError("Chests are disabled for now");
+    if (!getIsEnabled()) {
+      return;
+    }
 
-    // const partition = Math.floor(args.index / BITS_IN_PARTITION);
+    const partition = Math.floor(args.index / BITS_IN_PARTITION);
 
-    // const chestPartition = await ctx.db
-    //   .query("chests")
-    //   .withIndex("by_partition", (q) => q.eq("partition", partition))
-    //   .first();
+    const chestPartition = await ctx.db
+      .query("chests")
+      .withIndex("by_partition", (q) => q.eq("partition", partition))
+      .first();
 
-    // if (!chestPartition) {
-    //   await ctx.db.insert("chests", {
-    //     partition,
-    //     bitset: 1 << args.index % BITS_IN_PARTITION,
-    //   });
-    // } else {
-    //   chestPartition.bitset |= 1 << args.index % BITS_IN_PARTITION;
-    //   await ctx.db.patch(chestPartition._id, {
-    //     bitset: chestPartition.bitset,
-    //   });
-    // }
+    const bit = 1 << args.index % BITS_IN_PARTITION;
+    const isChestAlreadyOpen =
+      chestPartition && (chestPartition.bitset & bit) !== 0;
 
-    // await incrementCount(ctx);
+    if (isChestAlreadyOpen) {
+      return;
+    }
 
-    // const goldChest = getGoldChestsEnv().find((c) => c.index === args.index);
-    // if (goldChest) {
-    //   return goldChest.code;
-    // }
+    if (!chestPartition) {
+      await ctx.db.insert("chests", {
+        partition,
+        bitset: bit,
+      });
+    } else {
+      chestPartition.bitset |= bit;
+      await ctx.db.patch(chestPartition._id, {
+        bitset: chestPartition.bitset,
+      });
+    }
+
+    await incrementCount(ctx);
+
+    const goldChest = getGoldChestsEnv().find((c) => c.index === args.index);
+    if (goldChest) {
+      return goldChest.code;
+    }
   },
 });
 

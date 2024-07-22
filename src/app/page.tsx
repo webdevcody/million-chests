@@ -49,6 +49,9 @@ function Chest({
   const chestPartition = useQuery(api.chests.getChestPartition, {
     partition: partitionIndex,
   });
+  const featureFlags = useQuery(api.config.getFeatureFlags) ?? {
+    isEnabled: false,
+  };
   const bit = 1 << index % BITS_IN_PARTITION;
   const isOpen = chestPartition ? (chestPartition.bitset & bit) !== 0 : false;
 
@@ -60,7 +63,7 @@ function Chest({
     <div style={style}>
       <button
         key={index}
-        disabled={true || isOpen} // Disable until launch
+        disabled={!featureFlags.isEnabled || isOpen}
         className="btn w-24 h-24 flex items-center justify-center"
         onClick={() => {
           openChest({ index }).then((code) => {
