@@ -10,4 +10,9 @@ export default defineSchema({
     value: v.number(),
     index: v.number(),
   }).index("by_index", ["index"]),
+  rateLimits: defineTable({
+    key: v.string(),
+    value: v.number(),
+    resetOn: v.number(),
+  }).index("by_key", ["key"]),
 });

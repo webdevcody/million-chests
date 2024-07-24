@@ -15,6 +15,8 @@ const NUMBER_OF_CHESTS = 1_000_000;
 const ROW_HEIGHT = 70;
 const COLUMN_WIDTH = 70;
 
+const SESSION_ID = `${Math.random()}`;
+
 function Chest({
   rowIndex,
   columnIndex,
@@ -68,7 +70,7 @@ function Chest({
         disabled={!featureFlags.isEnabled || isOpen}
         className="size-16 btn btn-secondary flex items-center justify-center"
         onClick={() => {
-          openChest({ index }).then((code) => {
+          openChest({ index, sessionId: SESSION_ID }).then((code) => {
             if (code) {
               data.onCodeFound(code);
             }

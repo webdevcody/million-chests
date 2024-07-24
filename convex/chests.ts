@@ -2,6 +2,8 @@ import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { BITS_IN_PARTITION, getIsEnabled, getSumPartitions } from "./config";
 
+const LIMIT_PER_SECOND = 5;
+
 export const getTotalGoldChests = query({
   async handler() {
     return process.env.GOLD_CHESTS!.split(";").length;
@@ -33,12 +35,47 @@ async function incrementCount(ctx: MutationCtx) {
   }
 }
 
+async function rateLimitByKey(ctx: MutationCtx, key: string) {
+  const rateLimit = await ctx.db
+    .query("rateLimits")
+    .withIndex("by_key", (q) => q.eq("key", key))
+    .first();
+  if (!rateLimit) {
+    await ctx.db.insert("rateLimits", {
+      key,
+      value: 1,
+      resetOn: Date.now() + 1000,
+    });
+  } else {
+    if (rateLimit.value >= LIMIT_PER_SECOND) {
+      if (rateLimit.resetOn < Date.now()) {
+        rateLimit.value = 0;
+        rateLimit.resetOn = Date.now() + 1000;
+      } else {
+        return true;
+      }
+    }
+    rateLimit.value++;
+    await ctx.db.patch(rateLimit._id, {
+      value: rateLimit.value,
+      resetOn: rateLimit.resetOn,
+    });
+  }
+  return false;
+}
+
 export const openChest = mutation({
   args: {
     index: v.number(),
+    sessionId: v.string(),
   },
   async handler(ctx, args) {
     if (!getIsEnabled()) {
+      return;
+    }
+
+    const isLimited = await rateLimitByKey(ctx, args.sessionId);
+    if (!isLimited) {
       return;
     }
 
