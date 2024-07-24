@@ -126,9 +126,7 @@ export default function Home() {
         </Link>
       </div>
       <div className="px-4 text-center">
-        <h1 className="text-4xl my-4">
-          One Million Treasure Chests (disabled until launch)
-        </h1>
+        <h1 className="text-4xl my-4">One Million Treasure Chests</h1>
         <p className="text-2xl mb-4">{openBoxSum} of 1,000,000 chests opened</p>
 
         <p className="text-2xl mb-4">
